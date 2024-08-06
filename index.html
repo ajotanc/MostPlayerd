@@ -3,88 +3,72 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>TreeMap - Most Playerd STEAM</title>
+
+    <link rel="stylesheet" href="/assets/css/treemap.css" />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
   </head>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    #games {
-      position: relative;
-      display: grid;
-      grid-template-columns: auto auto;
-      grid-template-rows: auto auto;
-      /* justify-content: center;*/
-    }
-
-    .game {
-      border: 1px solid white;
-      box-sizing: border-box;
-      overflow: hidden;
-      font-size: 10px;
-      line-height: 12px;
-      text-align: center;
-      color: white;
-    }
-  </style>
   <body>
-    <h1 id="title">0</h1>
-    <div id="games"></div>
+    <div class="container">
+      <div class="header">
+        <div class="description">
+          <i class="fa icon fa-steam"></i>
+          <div>
+            <h1>Most Playerd</h1>
+            <h3>Máximo de jogadores simultâneos em 24h</h3>
+          </div>
+        </div>
+        <select name="top" id="top">
+          <option value="10">Top 10</option>
+          <option value="25">Top 25</option>
+          <option value="50">Top 50</option>
+          <option value="75">Top 75</option>
+          <option value="100">Top 100</option>
+        </select>
+      </div>
+      <div class="content">
+        <div id="treemap"></div>
+      </div>
+    </div>
   </body>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="/assets/js/jquery.js"></script>
+  <script src="/assets/js/treemap.js"></script>
   <script>
-    (async () => {
-      const width = $(window).width();
-      const height = $(window).height();
+    async function loadTreeMap(top = 10) {
+      const response = await fetch(
+        `https://live-interactions.vercel.app/api/v1/games/most-played?top=${top}`
+      );
 
-      const games = $("#games");
-
-      const data = await fetch("./most_played.json");
-      const nodes = await data.json();
-
-      let x = 0;
-      let y = 0;
-
-      const totalValue = nodes.reduce((sum, game) => sum + game.value, 0);
-
-      nodes.sort((a, b) => b.value - a.value);
-
-      $("#title")
-        .css({ position: "absolute", top: 0, left: 0, zIndex: 1 })
-        .text(totalValue);
-
-      nodes.forEach(({ name, value }, index) => {
-        const nodeWidth = (value / totalValue) * width;
-        const nodeHeight = (value / totalValue) * height;
-
-        const div = $("<div>")
-          .addClass("game")
-          .css({
-            width: `${nodeWidth}px`,
-            height: `${nodeHeight}px`,
-
-            backgroundColor: gerarCorAleatoria(),
-          })
-          .text(name);
-
-        games.append(div);
-
-        x += nodeWidth;
-      });
-    })();
-
-    function gerarCorAleatoria() {
-      const hex = "0123456789ABCDEF";
-      let cor = "#";
-
-      for (let i = 0; i < 6; i++) {
-        cor += hex[Math.floor(Math.random() * 16)];
+      if (!response.ok) {
+        throw new Error(response.statusText);
       }
 
-      return cor;
+      const data = await response.json();
+
+      $("#treemap").treemap(data, {
+        background: "#0160af",
+        baseColor: "#00447c",
+        color: "#FFFFFF",
+        review: {
+          show: true,
+          color: "#FFFFFF",
+        },
+        tags: {
+          show: true,
+          color: "#00447c",
+          background: "#FFFFFF",
+        },
+      });
     }
+
+    $(document).ready(async function () {
+      await loadTreeMap();
+
+      $(document).on("change", "#top", async function () {
+        const top = $(this).val();
+
+        await loadTreeMap(top);
+      });
+    });
   </script>
 </html>

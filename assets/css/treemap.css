@@ -88,14 +88,13 @@ button {
 .treemap-tags {
   display: flex;
   flex-wrap: wrap;
-  margin-top: 0.8rem;
 }
 
 .treemap-tag {
   font-size: 1.2rem;
   line-height: 1.6rem;
   font-size: 600;
-  margin: 0.2rem;
+  margin: 0.4rem 0.4rem 0 0;
   padding: 0.2rem 0.4rem;
   font-size: 0.8rem;
 }
