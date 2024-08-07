@@ -82,19 +82,37 @@ button {
   margin: 0;
 }
 
+.treemap-modal-image {
+  width: 100%;
+  height: auto;
+  margin-bottom: 0.8rem;
+}
+
 .treemap-modal-title {
   font-size: 1.2rem;
   font-weight: 600;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.8rem !important;
 }
 
 .treemap-modal-description {
   font-size: 1rem;
 }
 
+.treemap-modal-developers {
+  margin-top: 0.8rem !important;
+}
+
+.treemap-modal-developers,
+.treemap-modal-distributors,
+.treemap-modal-release-date {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
 .treemap-tags {
   display: flex;
   flex-wrap: wrap;
+  margin-top: 0.4rem;
 }
 
 .treemap-tag {
