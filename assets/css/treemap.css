@@ -34,8 +34,15 @@ button {
   overflow-x: auto;
 }
 
+.treemap-header .treemap-title {
+  font-weight: 600;
+}
+
+.treemap-footer .treemap-title {
+  font-weight: 400;
+}
+
 .treemap-title {
-  font-weight: bold;
   margin: 0;
   word-break: break-all;
 }
