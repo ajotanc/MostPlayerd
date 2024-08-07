@@ -42,7 +42,7 @@
         stroke="10"
         bg-opacity="0.1"
         speed="2.0"
-        color="#FFFFFF"
+        color="#ffffff"
       ></l-line-wobble>
     </div>
   </body>
@@ -74,17 +74,18 @@
       const data = await response.json();
 
       $("#treemap").treemap(data, {
-        background: "#0160af",
         baseColor: "#00447c",
-        color: "#FFFFFF",
+        color: "#ffffff",
+        scrollColor: "#00223e",
+        borderColor: "#4c7ca3",
         modal: {
           show: true,
-          color: "#FFFFFF",
+          color: "#ffffff",
           image: true,
           tags: {
             show: true,
             color: "#00447c",
-            background: "#FFFFFF",
+            background: "#ffffff",
             amount: 10, // number || "all"
           },
         },

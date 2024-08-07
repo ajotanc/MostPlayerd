@@ -16,23 +16,35 @@
     );
 
     const defaults = {
-      background: "#0160af",
       baseColor: "#00447c",
-      color: "#FFFFFF",
+      color: "#ffffff",
+      scrollColor: "#00223e",
+      borderColor: "#4c7ca3",
       modal: {
         show: true,
-        color: "#FFFFFF",
+        color: "#ffffff",
+        background: "#0160af",
         image: true,
         tags: {
           show: true,
           color: "#00447c",
-          background: "#FFFFFF",
+          background: "#ffffff",
           amount: 5,
         },
       },
     };
 
+
     $.extend(true, this, defaults, options);
+
+    $(':root').css('--treemap-scrollbar-color', this.scrollColor);
+    $(':root').css('--treemap-base-color', this.baseColor);
+    $(':root').css('--treemap-border-color', this.borderColor);
+    $(':root').css('--treemap-color', this.color);
+    $(':root').css('--treemap-modal-color', this.modal.color);
+    $(':root').css('--treemap-modal-background', this.modal.background);
+    $(':root').css('--treemap-tags-color', this.modal.tags.color);
+    $(':root').css('--treemap-tags-background', this.modal.tags.background);
 
     $(window).on("resize", () => this.resize());
   }
@@ -116,7 +128,6 @@
       const content = $("<div>")
         .addClass("treemap-content")
         .css({
-          color: this.color,
           backgroundColor: colors[index],
           padding,
           cursor: this.modal.show ? "pointer" : "auto",
@@ -149,9 +160,6 @@
         .addClass("treemap-anchor")
         .attr("href", url)
         .attr("target", "_blank")
-        .css({
-          color: this.color,
-        })
         .append($("<i>").addClass("fa fa-link"));
 
       content.append(header, footer, button);
@@ -173,15 +181,7 @@
       });
 
       box.bind("mousemove", node, (e) => {
-        const { clientY, clientX } = e;
-        const { label } = e.data;
-
-        const modal = $(`[data-game="${label}"]`);
-
-        modal.css({
-          top: clientY - modal.height() - 24,
-          left: clientX + 24,
-        });
+        this.moveModal(e);
       });
 
       box.bind("mouseleave", node, (e) => {
@@ -193,25 +193,69 @@
   };
 
   /**
-   * Creates a modal dialog with the given data and appends it to the body of the document.
+   * Moves the modal element to the specified coordinates on the page, taking into account the size of the modal and the window.
+   *
+   * @param {Object} options - An object containing the following properties:
+   *   - data: {Object} - An object containing the following properties:
+   *     - label: {string} - The label of the modal element.
+   *   - pageX: {number} - The x-coordinate of the mouse pointer.
+   *   - pageY: {number} - The y-coordinate of the mouse pointer.
+   * @return {void} This function does not return anything.
+   */
+  TreeMap.prototype.moveModal = function ({ data: { label }, pageX, pageY }) {
+    const modal = $(`[data-game="${label}"]`);
+
+    if (modal.is(":visible")) {
+      const modalDimensions = modal.get(0).getBoundingClientRect();
+      const windowDimensions = {
+        width: document.documentElement.clientWidth,
+        height: document.documentElement.clientHeight,
+      };
+      const offset = 16;
+
+      const windowCenterX = windowDimensions.width / 2;
+      const windowCenterY = windowDimensions.height / 2;
+
+      let left = Math.min(
+        Math.max(pageX - modalDimensions.width / 2, 0),
+        windowDimensions.width - modalDimensions.width
+      );
+
+      let top = Math.min(
+        Math.max(pageY - modalDimensions.height / 2, 0),
+        windowDimensions.height - modalDimensions.height
+      );
+
+      if (pageX < windowCenterX) {
+        left = Math.min(pageX + offset, windowDimensions.width - modalDimensions.width);
+      } else {
+        left = Math.max(pageX - modalDimensions.width - offset, 0);
+      }
+
+      if (pageY < windowCenterY) {
+        top = Math.min(pageY + offset, windowDimensions.height - modalDimensions.height);
+      } else {
+        top = Math.max(pageY - modalDimensions.height - offset, 0);
+      }
+
+      modal.css({ top, left });
+    }
+  };
+
+  /**
+   * Creates a modal dialog with the given   data and appends it to the body of the document.
    *
    * @param {Event} e - The event object containing the data for the modal.
    * @return {void} This function does not return a value.
    */
-  TreeMap.prototype.createModal = function ({ data, clientY, clientX }) {
-    const { label, summary } = data;
+  TreeMap.prototype.createModal = function (e) {
+    const { label, summary } = e.data;
     const { description, tags, image, developers, distributors, releaseDate } =
       summary;
 
     const modal = $("<div>")
       .addClass("treemap-modal")
       .attr("data-game", label)
-      .css({
-        background: this.baseColor,
-        color: this.color,
-        left: clientX + 24,
-        top: clientY + 24,
-      });
 
     const body = $("<div>").addClass("treemap-modal-body").appendTo(modal);
 
@@ -255,17 +299,16 @@
     if (this.modal.tags?.show) {
       if (tags.length > 0) {
         const tagsContainer = $("<div>").addClass("treemap-tags");
-        const tagsAmount = this.modal.tags.amount === "all" ? tags.length : this.modal.tags.amount;
+        const tagsAmount =
+          this.modal.tags.amount === "all"
+            ? tags.length
+            : this.modal.tags.amount;
 
         // biome-ignore lint/complexity/noForEach: <explanation>
         tags.slice(0, tagsAmount).forEach((tag) => {
           tagsContainer.append(
             $("<span>")
               .addClass("treemap-tag")
-              .css({
-                background: this.modal.tags.background,
-                color: this.modal.tags.color,
-              })
               .text(tag)
           );
         });
@@ -275,6 +318,8 @@
     }
 
     $("body").append(modal);
+
+    this.moveModal(e);
   };
 
   /**
@@ -288,7 +333,7 @@
     const min = Math.min(...nodes.map((node) => node.value));
     const max = Math.max(...nodes.map((node) => node.value));
 
-    const baseRGB = hexToRgb(this.background);
+    const baseRGB = hexToRgb(this.baseColor);
 
     return nodes.map((node) => {
       const normalizedValue = node.value / (max - min);
