@@ -32,11 +32,7 @@
       },
     };
 
-    const settings = $.extend({}, defaults, options);
     $.extend(true, this, defaults, options);
-
-    // Verificando as configurações finais
-    console.log('Final settings:', settings);
 
     $(window).on("resize", () => this.resize());
   }
@@ -256,7 +252,6 @@
         .appendTo(body);
     }
 
-    console.log(this.settings)
     if (this.modal.tags?.show) {
       if (tags.length > 0) {
         const tagsContainer = $("<div>").addClass("treemap-tags");
