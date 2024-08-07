@@ -36,11 +36,33 @@
         <div id="treemap"></div>
       </div>
     </div>
+    <div id="loading" style="display: none">
+      <l-line-wobble
+        size="100"
+        stroke="10"
+        bg-opacity="0.1"
+        speed="2.0"
+        color="#FFFFFF"
+      ></l-line-wobble>
+    </div>
   </body>
   <script src="/assets/js/jquery.js"></script>
   <script src="/assets/js/treemap.js"></script>
+  <script
+    type="module"
+    src="https://cdn.jsdelivr.net/npm/ldrs/dist/auto/lineWobble.js"
+  ></script>
   <script>
+    function loading(show = true) {
+      if (show) {
+        $("#loading").show();
+      } else {
+        $("#loading").hide();
+      }
+    }
     async function loadTreeMap(top = 10) {
+      loading(true);
+
       const response = await fetch(
         `https://live-interactions.vercel.app/api/v1/games/most-played?top=${top}`
       );
@@ -67,6 +89,8 @@
           },
         },
       });
+
+      loading(false);
     }
 
     $(document).ready(async function () {
