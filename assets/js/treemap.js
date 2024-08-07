@@ -119,7 +119,7 @@
           color: this.color,
           backgroundColor: colors[index],
           padding,
-          cursor: summary.description ? "pointer" : "not-allowed",
+          cursor: this.modal.show ? "pointer" : "auto",
         })
         .appendTo(box);
 

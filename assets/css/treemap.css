@@ -30,7 +30,6 @@ button {
   flex-direction: column;
   justify-content: space-between;
   align-items: start;
-  cursor: pointer;
   overflow-x: auto;
 }
 
