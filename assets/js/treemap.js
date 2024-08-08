@@ -20,6 +20,7 @@
       color: "#ffffff",
       scrollColor: "#00223e",
       borderColor: "#4c7ca3",
+      inputValue: "value",
       modal: {
         show: true,
         color: "#ffffff",
@@ -56,15 +57,14 @@
    * y: The y-coordinate of the top-left corner of the rectangle.
    * width: The width of the rectangle.
    * height: The height of the rectangle.
-   * margin: The margin around the rectangle.
    *
    * Returns: None.
    */
-  function Rectangle(x, y, width, height, margin) {
+  function Rectangle(x, y, width, height) {
     this.x = x;
     this.y = y;
-    this.width = Math.floor(width);
-    this.height = Math.floor(height);
+    this.width = Math.round(width);
+    this.height = Math.round(height);
   }
 
   /**
@@ -82,10 +82,25 @@
     return {
       top,
       left,
-      width: width,
-      height: height,
+      width,
+      height,
     };
   };
+
+  /**
+   * Maps an array of nodes to a new array of nodes, adding a 'value' property to each node if it doesn't already have one.
+   *
+   * @param {Array<Object>} nodes - The array of nodes to map.
+   * @return {Array<Object>} The mapped array of nodes.
+   */
+  TreeMap.prototype.map = function (nodes) {
+    return nodes.map(node => {
+      if (!node.hasOwnProperty('value')) {
+        return { ...node, value: node[this.inputValue] };
+      }
+      return node;
+    });
+  }
 
   /**
    * Creates a treemap visualization based on the given nodes.
@@ -99,7 +114,7 @@
       return;
     }
 
-    this.nodes = nodes; // Save the nodes for future use
+    this.nodes = this.map(nodes);
     this.draw();
   };
 
@@ -108,7 +123,7 @@
     const colors = this.backgroundColor(nodes);
 
     nodes.forEach((node, index) => {
-      const { label, value, summary, bounds } = node;
+      const { name, playingNow, dailyPeak, url, bounds } = node;
 
       const [fontSizeFirst, fontSizeSecond] =
         bounds.width <= 120
@@ -146,24 +161,30 @@
         .css({
           fontSize: fontSizeFirst,
         })
-        .text(label);
+        .text(name);
 
       header.append(titleHeader);
 
       const footer = $("<div>").addClass("treemap-footer");
 
-      const titleFooter = $("<p>")
+      const titleDailyPeak = $("<p>")
         .addClass("treemap-title")
         .css({
           fontSize: fontSizeSecond,
         })
-        .text(`${value} jogadores simultâneos`);
+        .text(`${dailyPeak} pico diário`)
+      const titlePlayingNow = $("<p>")
+        .addClass("treemap-title text-bold")
+        .css({
+          fontSize: fontSizeSecond,
+        })
+        .text(`${playingNow} jogando agora`);
 
-      footer.append(titleFooter);
+      footer.append(titlePlayingNow, titleDailyPeak);
 
       const button = $("<a>")
         .addClass("treemap-anchor")
-        .attr("href", summary.url)
+        .attr("href", url)
         .attr("target", "_blank")
         .append($("<i>").addClass("fa fa-link"));
 
@@ -173,8 +194,8 @@
 
       // Events
       box.bind("click", node, (e) => {
-        const { label } = e.data;
-        const modal = $(`[data-game="${label}"]`);
+        const { name } = e.data;
+        const modal = $(`[data-game="${name}"]`);
 
         if (this.modal.show) {
           if (!modal.length) {
@@ -190,9 +211,9 @@
       });
 
       box.bind("mouseleave", node, (e) => {
-        const { label } = e.data;
+        const { name } = e.data;
 
-        $(`[data-game="${label}"]`).remove();
+        $(`[data-game="${name}"]`).remove();
       });
     });
   };
@@ -202,13 +223,13 @@
    *
    * @param {Object} options - An object containing the following properties:
    *   - data: {Object} - An object containing the following properties:
-   *     - label: {string} - The label of the modal element.
+   *     - name: {string} - The name of the modal element.
    *   - pageX: {number} - The x-coordinate of the mouse pointer.
    *   - pageY: {number} - The y-coordinate of the mouse pointer.
    * @return {void} This function does not return anything.
    */
-  TreeMap.prototype.moveModal = function ({ data: { label }, pageX, pageY }) {
-    const modal = $(`[data-game="${label}"]`);
+  TreeMap.prototype.moveModal = function ({ data: { name }, pageX, pageY }) {
+    const modal = $(`[data-game="${name}"]`);
 
     if (modal.is(":visible")) {
       const modalDimensions = modal.get(0).getBoundingClientRect();
@@ -254,13 +275,11 @@
    * @return {void} This function does not return a value.
    */
   TreeMap.prototype.createModal = function (e) {
-    const { label, summary } = e.data;
-    const { description, tags, image, developers, distributors, releaseDate } =
-      summary;
+    const { name, description, tags, image, developers, distributors, releaseDate } = e.data;
 
     const modal = $("<div>")
       .addClass("treemap-modal")
-      .attr("data-game", label)
+      .attr("data-game", name)
 
     const body = $("<div>").addClass("treemap-modal-body").appendTo(modal);
 
@@ -271,7 +290,7 @@
         .appendTo(body);
     }
 
-    $("<p>").addClass("treemap-modal-title").text(label).appendTo(body);
+    $("<p>").addClass("treemap-modal-title").text(name).appendTo(body);
     $("<p>")
       .addClass("treemap-modal-description")
       .text(description)
@@ -372,7 +391,7 @@
    * @return {Array} The sorted array of nodes.
    */
   TreeMap.prototype.squarify = function (nodes, rectangle) {
-    nodes.sort((a, b) => b.value - a.value);
+    nodes.sort((a, b) => b.dailyPeak - a.dailyPeak);
 
     this.layout(nodes, rectangle);
 

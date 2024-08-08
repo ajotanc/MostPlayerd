@@ -51,6 +51,10 @@ button {
   font-family: Poppins, sans-serif !important;
 }
 
+.text-bold {
+  font-weight: 600 !important;
+}
+
 .treemap-box {
   position: absolute;
   display: flex;
