@@ -21,6 +21,7 @@
       scrollColor: "#00223e",
       borderColor: "#4c7ca3",
       inputValue: "value",
+      inputLabel: "name",
       modal: {
         show: true,
         color: "#ffffff",
@@ -88,18 +89,13 @@
   };
 
   /**
-   * Maps an array of nodes to a new array of nodes, adding a 'value' property to each node if it doesn't already have one.
+   * Maps an array of nodes to a new array of nodes, adding a 'value' or 'name' property to each node if it doesn't already have one.
    *
    * @param {Array<Object>} nodes - The array of nodes to map.
    * @return {Array<Object>} The mapped array of nodes.
    */
   TreeMap.prototype.map = function (nodes) {
-    return nodes.map(node => {
-      if (!node.hasOwnProperty('value')) {
-        return { ...node, value: node[this.inputValue] };
-      }
-      return node;
-    });
+    return nodes.map(node => ({ ...node, value: node[this.inputValue], name: node[this.inputLabel] }));
   }
 
   /**
@@ -391,7 +387,7 @@
    * @return {Array} The sorted array of nodes.
    */
   TreeMap.prototype.squarify = function (nodes, rectangle) {
-    nodes.sort((a, b) => b.dailyPeak - a.dailyPeak);
+    nodes.sort((a, b) => b.value - a.value);
 
     this.layout(nodes, rectangle);
 
