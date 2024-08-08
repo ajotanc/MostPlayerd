@@ -94,6 +94,11 @@
    * @return {void} This function does not return a value.
    */
   TreeMap.prototype.init = function (nodes) {
+    if (!nodes.length) {
+      alert('No nodes found');
+      return;
+    }
+
     this.nodes = nodes; // Save the nodes for future use
     this.draw();
   };
@@ -103,7 +108,7 @@
     const colors = this.backgroundColor(nodes);
 
     nodes.forEach((node, index) => {
-      const { label, value, url, summary, bounds } = node;
+      const { label, value, summary, bounds } = node;
 
       const [fontSizeFirst, fontSizeSecond] =
         bounds.width <= 120
@@ -128,7 +133,7 @@
       const content = $("<div>")
         .addClass("treemap-content")
         .css({
-          backgroundColor: colors[index],
+          background: colors[index],
           padding,
           cursor: this.modal.show ? "pointer" : "auto",
         })
@@ -158,7 +163,7 @@
 
       const button = $("<a>")
         .addClass("treemap-anchor")
-        .attr("href", url)
+        .attr("href", summary.url)
         .attr("target", "_blank")
         .append($("<i>").addClass("fa fa-link"));
 
@@ -326,14 +331,17 @@
    * Generates an array of RGBA color strings based on the given nodes and base color.
    *
    * @param {Array} nodes - An array of objects containing a 'value' property.
-   * @param {number} [alpha=1] - The alpha value for the generated colors.
    * @return {Array} An array of RGBA color strings.
    */
-  TreeMap.prototype.backgroundColor = function (nodes, alpha = 1) {
+  TreeMap.prototype.backgroundColor = function (nodes) {
+    const baseRGB = hexToRgb(this.baseColor);
+
+    if (nodes.length === 1) {
+      return [`rgb(${baseRGB.r}, ${baseRGB.g}, ${baseRGB.b})`];
+    }
+
     const min = Math.min(...nodes.map((node) => node.value));
     const max = Math.max(...nodes.map((node) => node.value));
-
-    const baseRGB = hexToRgb(this.baseColor);
 
     return nodes.map((node) => {
       const normalizedValue = node.value / (max - min);
@@ -341,7 +349,7 @@
       const g = Math.floor(normalizedValue * baseRGB.g);
       const b = Math.floor(normalizedValue * baseRGB.b);
 
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      return `rgb(${r}, ${g}, ${b})`;
     });
 
     function hexToRgb(hex) {
